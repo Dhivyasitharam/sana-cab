@@ -5,7 +5,7 @@ export default function AdminLogin({ onLogin }) {
   const [creds, setCreds] = useState({ user:"", pass:"" });
   const [err, setErr] = useState("");
   const go = () => {
-    if (creds.user === "admin" && creds.pass === "admin123") onLogin();
+    if (creds.user === "Naveen" && creds.pass === "sana9700") onLogin();
     else setErr("Invalid credentials. Use admin / admin123");
   };
   return (
