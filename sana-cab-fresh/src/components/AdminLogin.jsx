@@ -6,8 +6,8 @@ const sha256 = async (msg) => {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 };
 
-const ADMIN_USER_HASH = import.meta.env.VITE_ADMIN_USER_HASH;
-const ADMIN_PASS_HASH = import.meta.env.VITE_ADMIN_PASS_HASH;
+const ADMIN_USER_HASH = import.meta.env.VITE_ADMIN_USER;
+const ADMIN_PASS_HASH = import.meta.env.VITE_ADMIN_PASS;
 export default function AdminLogin({ onLogin }) {
   const [creds, setCreds] = useState({ user: "", pass: "" });
   const [err, setErr] = useState("");
