@@ -208,6 +208,7 @@ export default function AdminDashboard({ onLogout }) {
         )}
       </div>
 
+      {/* Modals */}
       {modal?.type==="viewReg" && (
         <div className="modal-bg" onClick={()=>setModal(null)}>
           <div className="modal-box" onClick={e=>e.stopPropagation()}>
