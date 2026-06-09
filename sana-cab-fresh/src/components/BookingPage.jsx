@@ -1,8 +1,23 @@
 import { useState } from "react";
 import { dbAdd } from "../db.js";
 
+// ✅ MOVED OUTSIDE - This is the fix!
+const F = ({ name, label, type="text", placeholder, options, required, form, setForm, errors, setErrors }) => (
+  <div className="form-group">
+    <label className="form-label">{label}{required && " *"}</label>
+    {options ? (
+      <select value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }}>
+        {options.map(o => <option key={o}>{o}</option>)}
+      </select>
+    ) : (
+      <input type={type} style={errors[name]?{borderColor:"#ef4444"}:{}} value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }} placeholder={placeholder} />
+    )}
+    {errors[name] && <div className="form-error">{errors[name]}</div>}
+  </div>
+);
+
 export default function BookingPage() {
-  const [form, setForm] = useState({ customerName:"", mobile:"", email:"", pickup:"", drop:"", date:"", time:"", vehicleType:"Sedan", passengers:1, notes:"" });
+  const [form, setForm] = useState({ customerName:"", mobile:"", email:"", pickup:"", drop:"", date:"", time:"", vehicleType:"", passengers:"", notes:"" });
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,20 +43,6 @@ export default function BookingPage() {
     setSuccess(bookingRef);
     setLoading(false);
   };
-
-  const F = ({ name, label, type="text", placeholder, options, required }) => (
-    <div className="form-group">
-      <label className="form-label">{label}{required && " *"}</label>
-      {options ? (
-        <select value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }}>
-          {options.map(o => <option key={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input type={type} style={errors[name]?{borderColor:"#ef4444"}:{}} value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }} placeholder={placeholder} />
-      )}
-      {errors[name] && <div className="form-error">{errors[name]}</div>}
-    </div>
-  );
 
   if (success) return (
     <div style={{ minHeight:"80vh", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
@@ -72,22 +73,22 @@ export default function BookingPage() {
       <div className="glass" style={{ padding:36 }}>
         <h3 style={{ fontWeight:700, color:"#FFD600", marginBottom:20, fontSize:13, textTransform:"uppercase", letterSpacing:1 }}>👤 Your Details</h3>
         <div className="grid-2">
-          <F name="customerName" label="Full Name" required placeholder="Your full name" />
-          <F name="mobile" label="Mobile Number" required placeholder="10-digit mobile number" />
+          <F name="customerName" label="Full Name" required placeholder="Your full name" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+          <F name="mobile" label="Mobile Number" required placeholder="10-digit mobile number" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         </div>
-        <F name="email" label="Email Address" placeholder="your@email.com (optional)" />
+        <F name="email" label="Email Address" placeholder="your@email.com (optional)" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
 
         <h3 style={{ fontWeight:700, color:"#FFD600", margin:"24px 0 20px", fontSize:13, textTransform:"uppercase", letterSpacing:1 }}>📍 Trip Details</h3>
         <div className="grid-2">
-          <F name="pickup" label="Pickup Location" required placeholder="City / address / landmark" />
-          <F name="drop" label="Drop Location" required placeholder="Destination city / address" />
+          <F name="pickup" label="Pickup Location" required placeholder="City / address / landmark" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+          <F name="drop" label="Drop Location" required placeholder="Destination city / address" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         </div>
         <div className="grid-2">
-          <F name="date" label="Travel Date" required type="date" />
-          <F name="time" label="Travel Time" required type="time" />
+          <F name="date" label="Travel Date" required type="date" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+          <F name="time" label="Travel Time" required type="time" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         </div>
         <div className="grid-2">
-          <F name="vehicleType" label="Vehicle Type" options={["Sedan","SUV","Hatchback","Minivan","Luxury"]} />
+          <F name="vehicleType" label="Vehicle Type" options={["Sedan","SUV","Hatchback","Minivan","Luxury"]} form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
           <div className="form-group">
             <label className="form-label">Passengers</label>
             <input type="number" min={1} max={8} value={form.passengers} onChange={e => setForm(p => ({...p,passengers:parseInt(e.target.value)||1}))} />

@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { dbAdd } from "../db.js";
 
+// ✅ MOVED OUTSIDE - This is the fix!
+const F = ({ name, label, type="text", placeholder, form, setForm, errors, setErrors }) => (
+  <div className="form-group">
+    <label className="form-label">{label}</label>
+    <input type={type} style={errors[name]?{borderColor:"#ef4444"}:{}} value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }} placeholder={placeholder} />
+    {errors[name] && <div className="form-error">{errors[name]}</div>}
+  </div>
+);
+
 export default function RegistrationPage() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ driverName:"", mobile:"", email:"", address:"", cabNumber:"", vehicleType:"Sedan", licenseNumber:"", documents:{} });
@@ -60,14 +69,6 @@ export default function RegistrationPage() {
     </div>
   );
 
-  const F = ({ name, label, type="text", placeholder }) => (
-    <div className="form-group">
-      <label className="form-label">{label}</label>
-      <input type={type} style={errors[name]?{borderColor:"#ef4444"}:{}} value={form[name]} onChange={e => { setForm(p => ({...p,[name]:e.target.value})); setErrors(p => ({...p,[name]:""})); }} placeholder={placeholder} />
-      {errors[name] && <div className="form-error">{errors[name]}</div>}
-    </div>
-  );
-
   const steps = ["Personal Info","Vehicle Details","Documents"];
   const stepC = ["#FFD600","#60a5fa","#34d399"];
 
@@ -96,8 +97,11 @@ export default function RegistrationPage() {
         {step === 1 && (
           <>
             <h3 style={{ fontWeight:700, color:"#FFD600", marginBottom:20, fontSize:13, textTransform:"uppercase", letterSpacing:1 }}>Personal Information</h3>
-            <div className="grid-2"><F name="driverName" label="Full Name *" placeholder="Your full name" /><F name="mobile" label="Mobile *" placeholder="10-digit number" /></div>
-            <F name="email" label="Email *" placeholder="your@email.com" />
+            <div className="grid-2">
+              <F name="driverName" label="Full Name *" placeholder="Your full name" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+              <F name="mobile" label="Mobile *" placeholder="10-digit number" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+            </div>
+            <F name="email" label="Email *" placeholder="your@email.com" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
             <div className="form-group">
               <label className="form-label">Address *</label>
               <textarea style={{ height:80, resize:"vertical", ...(errors.address?{borderColor:"#ef4444"}:{}) }} value={form.address} onChange={e => { setForm(p => ({...p,address:e.target.value})); setErrors(p => ({...p,address:""})); }} placeholder="Full address with city and pincode" />
@@ -109,7 +113,7 @@ export default function RegistrationPage() {
           <>
             <h3 style={{ fontWeight:700, color:"#60a5fa", marginBottom:20, fontSize:13, textTransform:"uppercase", letterSpacing:1 }}>Vehicle Details</h3>
             <div className="grid-2">
-              <F name="cabNumber" label="Cab / Vehicle Number *" placeholder="e.g. TN09AB1234" />
+              <F name="cabNumber" label="Cab / Vehicle Number *" placeholder="e.g. TN09AB1234" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
               <div className="form-group">
                 <label className="form-label">Vehicle Type</label>
                 <select value={form.vehicleType} onChange={e => setForm(p => ({...p,vehicleType:e.target.value}))}>
@@ -117,7 +121,7 @@ export default function RegistrationPage() {
                 </select>
               </div>
             </div>
-            <F name="licenseNumber" label="Driving License Number *" placeholder="e.g. TN0120200001234" />
+            <F name="licenseNumber" label="Driving License Number *" placeholder="e.g. TN0120200001234" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
           </>
         )}
         {step === 3 && (
