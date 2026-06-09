@@ -13,10 +13,12 @@ export default function AdminLogin({ onLogin }) {
   const [err, setErr] = useState("");
 
   const go = async () => {
-    const [uHash, pHash] = await Promise.all([sha256(creds.user), sha256(creds.pass)]);
-    if (uHash === ADMIN_USER_HASH && pHash === ADMIN_PASS_HASH) onLogin();
-    else setErr("Invalid credentials.");
-  };
+  if (creds.user === ADMIN_USER_HASH && creds.pass === ADMIN_PASS_HASH) {
+    onLogin();
+  } else {
+    setErr("Invalid credentials.");
+  }
+};
 
   return (
     <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
