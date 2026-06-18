@@ -10,8 +10,8 @@ export default function Homepage({ onNav }) {
         <div style={{ position:"absolute", bottom:"5%", left:"-5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle,rgba(255,214,0,.05) 0%,transparent 70%)", zIndex:0 }} />
         <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(255,214,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,214,0,.03) 1px,transparent 1px)", backgroundSize:"60px 60px", zIndex:0 }} />
 
-        <div style={{ maxWidth:1100, margin:"0 auto", width:"100%", position:"relative", zIndex:1 }}>
-          <div style={{ maxWidth:700 }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", width:"100%", position:"relative", zIndex:1, display:"flex", alignItems:"center", gap:40, flexWrap:"wrap" }}>
+          <div style={{ flex:1, minWidth:280, maxWidth:700 }}>
             <div className="section-label fadeUp" style={{ animationDelay:".1s" }}>🚖 Chennai's Trusted Cab Service</div>
             <h1 className="fadeUp" style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(2.8rem,7vw,6rem)", lineHeight:1.05, letterSpacing:2, marginBottom:20, animationDelay:".2s" }}>
               SANA CAB —<br />
@@ -30,7 +30,21 @@ export default function Homepage({ onNav }) {
               </button>
             </div>
           </div>
-          <div className="float hide-sm" style={{ position:"absolute", right:"0%", top:"10%", fontSize:160, opacity:.07, userSelect:"none", pointerEvents:"none" }}>🚖</div>
+
+          {/* ✅ CAB IMAGE IN HERO */}
+          <div className="fadeUp hide-sm" style={{ flex:"0 0 auto", animationDelay:".5s" }}>
+            <img
+              src="/cab.jpg"
+              alt="Sana Cab"
+              style={{
+                width: 420,
+                maxWidth: "100%",
+                borderRadius: 24,
+                boxShadow: "0 0 60px rgba(255,214,0,.2), 0 20px 60px rgba(0,0,0,.5)",
+                border: "2px solid rgba(255,214,0,.15)",
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -98,6 +112,37 @@ export default function Homepage({ onNav }) {
               SANA CAB operates with the owner's personal car and a network of trusted friends' cars to provide reliable transportation services across India.
             </p>
           </div>
+
+          {/* ✅ BOTH CAB IMAGES SIDE BY SIDE */}
+          <div style={{ display:"flex", gap:20, justifyContent:"center", flexWrap:"wrap", marginBottom:36 }}>
+            <div style={{ flex:"1 1 280px", maxWidth:500, textAlign:"center" }}>
+              <img
+                src="/cab.jpg"
+                alt="Sana Cab 1"
+                style={{
+                  width:"100%",
+                  borderRadius:20,
+                  boxShadow:"0 20px 60px rgba(0,0,0,.5)",
+                  border:"2px solid rgba(255,214,0,.2)",
+                }}
+              />
+              <p style={{ color:"rgba(255,255,255,.3)", fontSize:12, marginTop:10, letterSpacing:1 }}>TN72DX9285 · Naveen's Personal Cab</p>
+            </div>
+            <div style={{ flex:"1 1 280px", maxWidth:500, textAlign:"center" }}>
+              <img
+                src="/cab2.jpg"
+                alt="Sana Cab 2"
+                style={{
+                  width:"100%",
+                  borderRadius:20,
+                  boxShadow:"0 20px 60px rgba(0,0,0,.5)",
+                  border:"2px solid rgba(255,214,0,.2)",
+                }}
+              />
+              <p style={{ color:"rgba(255,255,255,.3)", fontSize:12, marginTop:10, letterSpacing:1 }}>TN72DX8402 · Partner Vehicle</p>
+            </div>
+          </div>
+
           <div style={{ display:"flex", flexWrap:"wrap", gap:24, justifyContent:"center" }}>
             {[
               { emoji:"🚗", name:"Personal Sedan", desc:"Naveen's own well-maintained car — your primary ride.", tag:"Owner's Vehicle" },
