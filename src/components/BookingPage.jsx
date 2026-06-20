@@ -62,35 +62,12 @@ export default function BookingPage() {
       submittedAt: new Date().toISOString(), assignedDriver: ""
     });
 
-    // Send confirmation email to user that booking is received and pending approval
+    // Send confirmation email to user that booking is received
     try {
       await sendEmailMessage(
         form.email,
-        "Booking Received – Awaiting Confirmation | Sana Cab",
-        `Dear ${form.customerName},
-
-Your booking request has been received and is awaiting admin confirmation.
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-BOOKING REFERENCE: ${bookingRef}
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-Trip Details:
-📍 Pickup  : ${form.pickup}
-🏁 Drop    : ${form.drop}
-📅 Date    : ${form.date}
-🕐 Time    : ${form.time}
-🚗 Vehicle : ${form.vehicleType}
-👥 Passengers: ${form.passengers}
-
-Status: ⏳ PENDING ADMIN APPROVAL
-
-Our admin will review your booking and you will receive a confirmation or cancellation email shortly.
-
-📞 Call us: +91 97905 82382
-📧 Email: kumarsandhiya561@gmail.com
-
-Thank you for choosing SANA CAB!`,
+        "Booking Received! – Sana Cab",
+        `Booking Received!\nWe'll call you shortly to confirm your cab. Thank you for choosing SANA CAB!\n\nBooking Reference\n${bookingRef}`,
         `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
@@ -99,35 +76,14 @@ Thank you for choosing SANA CAB!`,
     <div style="background:linear-gradient(135deg,#1a1a00,#2a2200);padding:36px 32px;text-align:center;border-bottom:2px solid #FFD600;">
       <div style="font-size:48px;margin-bottom:12px;">🎉</div>
       <h1 style="color:#FFD600;font-size:28px;margin:0;letter-spacing:2px;font-weight:900;">BOOKING RECEIVED!</h1>
-      <p style="color:rgba(255,255,255,0.6);margin:10px 0 0;font-size:14px;">Your request is awaiting admin confirmation</p>
     </div>
     <div style="padding:32px;">
-      <p style="color:#f5f5f5;font-size:15px;margin-bottom:24px;">Dear <strong style="color:#FFD600;">${form.customerName}</strong>,</p>
-      <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin-bottom:28px;">
-        We've successfully received your booking request! Our admin team will review it and confirm your cab. You'll receive an email once your booking is accepted or if there are any issues.
+      <p style="color:rgba(255,255,255,0.8);font-size:16px;line-height:1.7;margin-bottom:28px;text-align:center;">
+        We'll call you shortly to confirm your cab. Thank you for choosing <strong style="color:#FFD600;">SANA CAB!</strong>
       </p>
       <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
-        <div style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">BOOKING REFERENCE</div>
+        <div style="color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Booking Reference</div>
         <div style="color:#FFD600;font-size:32px;font-weight:900;letter-spacing:3px;">${bookingRef}</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:24px;">
-        <h3 style="color:#FFD600;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">📋 Trip Details</h3>
-        <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;width:120px;">📍 Pickup</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.pickup}</td></tr>
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🏁 Drop</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.drop}</td></tr>
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">📅 Date</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.date}</td></tr>
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🕐 Time</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.time}</td></tr>
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🚗 Vehicle</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.vehicleType}</td></tr>
-          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">👥 Passengers</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.passengers}</td></tr>
-        </table>
-      </div>
-      <div style="background:rgba(255,214,0,0.06);border:1px solid rgba(255,214,0,0.15);border-radius:10px;padding:14px;text-align:center;margin-bottom:24px;">
-        <span style="color:#FFD600;font-weight:700;font-size:13px;">⏳ Status: Pending Admin Approval</span>
-      </div>
-      <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;text-align:center;">
-        <p style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:8px;">Need help? Contact us:</p>
-        <p style="color:#FFD600;font-size:14px;font-weight:700;margin:4px 0;">📞 +91 97905 82382</p>
-        <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:4px 0;">📧 kumarsandhiya561@gmail.com</p>
       </div>
     </div>
     <div style="background:#111;padding:18px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
