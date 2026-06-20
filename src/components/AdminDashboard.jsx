@@ -28,36 +28,154 @@ export default function AdminDashboard({ onLogout }) {
     load();
   };
 
-  // ✅ Confirm booking + send Email
+  // ✅ Accept booking + send rich HTML Email to the user's entered email
   const handleConfirmBooking = async (booking) => {
+    // Capture all booking details before any state changes
+    const userEmail = booking.email;
+    const userName  = booking.customerName;
+    const ref       = booking.bookingRef;
+
+    // 1. Update DB status
     await dbUpdate("bookings", { ...booking, status: "confirmed" });
-    setMsg({ type: "success", text: "Booking confirmed!" });
-    load();
-    try {
-      await sendEmailMessage(
-        booking.email,
-        "Your Booking is Confirmed – Sana Cab",
-        `Dear ${booking.customerName},\n\nYour booking has been CONFIRMED.\n\nBooking Ref: ${booking.bookingRef}\nPickup: ${booking.pickup}\nDrop: ${booking.drop}\nDate: ${booking.date}\nTime: ${booking.time}\n\nThank you for choosing Sana Cab!`
-      );
-    } catch (err) {
-      setMsg({ type: "success", text: "Confirmed! (Email failed: " + err.message + ")" });
+
+    // 2. Send confirmation email to USER's email (from booking form)
+    if (userEmail) {
+      try {
+        await sendEmailMessage(
+          userEmail,
+          "Your Cab is CONFIRMED! 🚕 – Sana Cab",
+          `Dear ${userName},\n\n🎉 GREAT NEWS! Your cab booking has been CONFIRMED by our admin.\n\nBooking Ref : ${ref}\nPickup      : ${booking.pickup}\nDrop        : ${booking.drop}\nDate        : ${booking.date}\nTime        : ${booking.time}\nVehicle     : ${booking.vehicleType}\nPassengers  : ${booking.passengers}\n\nOur driver will be assigned and we'll call you before pickup.\n\n📞 +91 97905 82382\n📧 kumarsandhiya561@gmail.com\n\nThank you for choosing Sana Cab!`,
+          `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#161616;border-radius:16px;overflow:hidden;border:1px solid rgba(52,211,153,0.3);">
+    <div style="background:linear-gradient(135deg,#0a1f14,#0d2b1a);padding:36px 32px;text-align:center;border-bottom:2px solid #34d399;">
+      <div style="font-size:52px;margin-bottom:12px;">✅</div>
+      <h1 style="color:#34d399;font-size:28px;margin:0;letter-spacing:2px;font-weight:900;">BOOKING CONFIRMED!</h1>
+      <p style="color:rgba(255,255,255,0.6);margin:10px 0 0;font-size:14px;">Your cab has been accepted by admin</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#f5f5f5;font-size:15px;margin-bottom:20px;">Dear <strong style="color:#34d399;">${userName}</strong>,</p>
+      <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin-bottom:28px;">
+        🎉 Great news! Your cab booking has been <strong style="color:#34d399;">confirmed</strong> by our admin. Your driver will be assigned and we'll call you before your pickup time.
+      </p>
+      <div style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+        <div style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">BOOKING REFERENCE</div>
+        <div style="color:#34d399;font-size:32px;font-weight:900;letter-spacing:3px;">${ref}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <h3 style="color:#FFD600;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">📋 Your Trip Details</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;width:130px;">📍 Pickup</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.pickup}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">🏁 Drop</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.drop}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">📅 Date</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.date}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">🕐 Time</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.time}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">🚗 Vehicle</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.vehicleType}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">👥 Passengers</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.passengers}</td></tr>
+        </table>
+      </div>
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:10px;padding:14px;text-align:center;margin-bottom:24px;">
+        <span style="color:#34d399;font-weight:700;font-size:13px;">🟢 Status: CONFIRMED – Your cab is booked!</span>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;text-align:center;">
+        <p style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:8px;">Need help? Contact us:</p>
+        <p style="color:#FFD600;font-size:14px;font-weight:700;margin:4px 0;">📞 +91 97905 82382</p>
+        <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:4px 0;">📧 kumarsandhiya561@gmail.com</p>
+      </div>
+    </div>
+    <div style="background:#111;padding:18px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0;">© ${new Date().getFullYear()} SANA CAB · All rights reserved</p>
+    </div>
+  </div>
+</body>
+</html>`
+        );
+        setMsg({ type: "success", text: "✅ Booking confirmed! Email sent to " + userEmail });
+      } catch (err) {
+        console.error("Email failed:", err);
+        setMsg({ type: "error", text: "✅ Booking confirmed but email failed: " + err.message });
+      }
+    } else {
+      setMsg({ type: "success", text: "✅ Booking confirmed! (No email on file)" });
     }
+
+    // 3. Refresh table
+    load();
   };
 
-  // ✅ Cancel booking + send Email
+  // ✅ Reject booking + send rich HTML Email to the user's entered email
   const handleCancelBooking = async (booking) => {
+    // Capture all booking details before any state changes
+    const userEmail = booking.email;
+    const userName  = booking.customerName;
+    const ref       = booking.bookingRef;
+
+    // 1. Update DB status
     await dbUpdate("bookings", { ...booking, status: "cancelled" });
-    setMsg({ type: "success", text: "Booking cancelled!" });
-    load();
-    try {
-      await sendEmailMessage(
-        booking.email,
-        "Your Booking has been Cancelled – Sana Cab",
-        `Dear ${booking.customerName},\n\nUnfortunately, your booking has been CANCELLED.\n\nBooking Ref: ${booking.bookingRef}\nPickup: ${booking.pickup}\nDrop: ${booking.drop}\nDate: ${booking.date}\n\nFor any queries, please contact us.\n\nThank you,\nSana Cab Team`
-      );
-    } catch (err) {
-      setMsg({ type: "success", text: "Cancelled! (Email failed: " + err.message + ")" });
+
+    // 2. Send cancellation email to USER's email (from booking form)
+    if (userEmail) {
+      try {
+        await sendEmailMessage(
+          userEmail,
+          "Your Booking has been Cancelled – Sana Cab",
+          `Dear ${userName},\n\nWe regret to inform you that your cab booking has been CANCELLED.\n\nBooking Ref : ${ref}\nPickup      : ${booking.pickup}\nDrop        : ${booking.drop}\nDate        : ${booking.date}\nTime        : ${booking.time}\n\nFor any queries, please contact us directly.\n\n📞 +91 97905 82382\n📧 kumarsandhiya561@gmail.com\n\nWe apologize for the inconvenience.\nSana Cab Team`,
+          `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#161616;border-radius:16px;overflow:hidden;border:1px solid rgba(239,68,68,0.3);">
+    <div style="background:linear-gradient(135deg,#1f0a0a,#2b0d0d);padding:36px 32px;text-align:center;border-bottom:2px solid #ef4444;">
+      <div style="font-size:52px;margin-bottom:12px;">❌</div>
+      <h1 style="color:#ef4444;font-size:28px;margin:0;letter-spacing:2px;font-weight:900;">BOOKING CANCELLED</h1>
+      <p style="color:rgba(255,255,255,0.6);margin:10px 0 0;font-size:14px;">Your cab booking has been rejected</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#f5f5f5;font-size:15px;margin-bottom:20px;">Dear <strong style="color:#ef4444;">${userName}</strong>,</p>
+      <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin-bottom:28px;">
+        We regret to inform you that your cab booking has been <strong style="color:#ef4444;">cancelled</strong>. We apologize for the inconvenience. Please contact us for assistance or to make a new booking.
+      </p>
+      <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+        <div style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">BOOKING REFERENCE</div>
+        <div style="color:#ef4444;font-size:32px;font-weight:900;letter-spacing:3px;">${ref}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <h3 style="color:#FFD600;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">📋 Cancelled Booking Details</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;width:130px;">📍 Pickup</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.pickup}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">🏁 Drop</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.drop}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">📅 Date</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.date}</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0;">🕐 Time</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${booking.time}</td></tr>
+        </table>
+      </div>
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:14px;text-align:center;margin-bottom:24px;">
+        <span style="color:#ef4444;font-weight:700;font-size:13px;">🔴 Status: CANCELLED – Booking not confirmed</span>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;text-align:center;">
+        <p style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:8px;">Need help or want to rebook? Contact us:</p>
+        <p style="color:#FFD600;font-size:14px;font-weight:700;margin:4px 0;">📞 +91 97905 82382</p>
+        <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:4px 0;">📧 kumarsandhiya561@gmail.com</p>
+      </div>
+    </div>
+    <div style="background:#111;padding:18px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0;">© ${new Date().getFullYear()} SANA CAB · All rights reserved</p>
+    </div>
+  </div>
+</body>
+</html>`
+        );
+        setMsg({ type: "success", text: "❌ Booking rejected. Cancellation email sent to " + userEmail });
+      } catch (err) {
+        console.error("Email failed:", err);
+        setMsg({ type: "error", text: "❌ Booking rejected but email failed: " + err.message });
+      }
+    } else {
+      setMsg({ type: "success", text: "❌ Booking rejected! (No email on file)" });
     }
+
+    // 3. Refresh table
+    load();
   };
 
   const updateBooking = async (id, ch) => {
@@ -209,17 +327,18 @@ export default function AdminDashboard({ onLogout }) {
                   <tbody>
                     {fBooks.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "rgba(255,255,255,.25)", padding: 32 }}>No bookings found</td></tr>}
                     {fBooks.map(b => (
-                      <tr key={b.id}>
+                      <tr key={b.id} style={b.status === "pending" ? { background: "rgba(255,214,0,0.035)", borderLeft: "3px solid rgba(255,214,0,0.4)" } : {}}>
                         <td><code style={{ background: "rgba(96,165,250,.1)", color: "#60a5fa", padding: "2px 7px", borderRadius: 5, fontSize: 11, fontFamily: "monospace" }}>{b.bookingRef}</code></td>
-                        <td><div style={{ fontWeight: 600 }}>{b.customerName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{b.mobile}</div></td>
+                        <td><div style={{ fontWeight: 600 }}>{b.customerName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{b.mobile}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,.25)" }}>{b.email || "—"}</div></td>
                         <td><div style={{ fontSize: 12 }}>📍 {b.pickup}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,.3)" }}>🏁 {b.drop}</div></td>
                         <td><div style={{ fontSize: 12 }}>{b.date}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{b.time}</div></td>
                         <td style={{ fontSize: 12 }}>{b.vehicleType} · {b.passengers}p</td>
                         <td><span className={`tag tag-${b.status}`}>{b.status}</span></td>
                         <td>
-                          {b.status === "pending" && <AB color="#34d399" label="Confirm" onClick={() => handleConfirmBooking(b)} />}
+                          {b.status === "pending" && <AB color="#34d399" label="✅ Accept" onClick={() => handleConfirmBooking(b)} />}
+                          {b.status === "pending" && <AB color="#ef4444" label="❌ Reject" onClick={() => handleCancelBooking(b)} />}
                           {b.status === "confirmed" && <AB color="#a78bfa" label="Complete" onClick={() => updateBooking(b.id, { status: "completed" })} />}
-                          {(b.status === "pending" || b.status === "confirmed") && <AB color="#ef4444" label="Cancel" onClick={() => handleCancelBooking(b)} />}
+                          {b.status === "confirmed" && <AB color="#ef4444" label="Cancel" onClick={() => handleCancelBooking(b)} />}
                           <AB color="#60a5fa" label="View" onClick={() => setModal({ type: "viewBooking", data: b })} />
                           <AB color="#fbbf24" label="Edit" onClick={() => { setEditData({ ...b }); setModal({ type: "editBooking" }); }} />
                           <AB color="#ef4444" label="Del" onClick={() => del("bookings", b.id)} />

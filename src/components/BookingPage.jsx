@@ -43,7 +43,8 @@ export default function BookingPage() {
     const e = {};
     if (!form.customerName.trim()) e.customerName = "Name is required";
     if (!form.mobile.match(/^[6-9]\d{9}$/)) e.mobile = "Enter a valid 10-digit mobile number";
-    if (form.email && !form.email.match(/\S+@\S+\.\S+/)) e.email = "Enter a valid email";
+    if (!form.email.trim()) e.email = "Email is required to receive booking updates";
+    else if (!form.email.match(/\S+@\S+\.\S+/)) e.email = "Enter a valid email address";
     if (!form.pickup.trim()) e.pickup = "Pickup location required";
     if (!form.drop.trim()) e.drop = "Drop location required";
     if (!form.date) e.date = "Travel date required";
@@ -61,36 +62,130 @@ export default function BookingPage() {
       submittedAt: new Date().toISOString(), assignedDriver: ""
     });
 
-    if (form.email) {
-      try {
-        await sendEmailMessage(
-          form.email,
-          "Booking Received – Sana Cab",
-          `Dear ${form.customerName},\n\nYour booking has been received!\n\nBooking Ref: ${bookingRef}\nPickup: ${form.pickup}\nDrop: ${form.drop}\nDate: ${form.date}\nTime: ${form.time}\nVehicle: ${form.vehicleType}\nPassengers: ${form.passengers}\n\nWe'll call you shortly to confirm your ride.\n\nThank you,\nSana Cab Team`
-        );
-      } catch (err) {
-        console.error("Email failed:", err.message);
-      }
+    // Send confirmation email to user that booking is received and pending approval
+    try {
+      await sendEmailMessage(
+        form.email,
+        "Booking Received – Awaiting Confirmation | Sana Cab",
+        `Dear ${form.customerName},
+
+Your booking request has been received and is awaiting admin confirmation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+BOOKING REFERENCE: ${bookingRef}
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trip Details:
+📍 Pickup  : ${form.pickup}
+🏁 Drop    : ${form.drop}
+📅 Date    : ${form.date}
+🕐 Time    : ${form.time}
+🚗 Vehicle : ${form.vehicleType}
+👥 Passengers: ${form.passengers}
+
+Status: ⏳ PENDING ADMIN APPROVAL
+
+Our admin will review your booking and you will receive a confirmation or cancellation email shortly.
+
+📞 Call us: +91 97905 82382
+📧 Email: kumarsandhiya561@gmail.com
+
+Thank you for choosing SANA CAB!`,
+        `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#161616;border-radius:16px;overflow:hidden;border:1px solid rgba(255,214,0,0.15);">
+    <div style="background:linear-gradient(135deg,#1a1a00,#2a2200);padding:36px 32px;text-align:center;border-bottom:2px solid #FFD600;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <h1 style="color:#FFD600;font-size:28px;margin:0;letter-spacing:2px;font-weight:900;">BOOKING RECEIVED!</h1>
+      <p style="color:rgba(255,255,255,0.6);margin:10px 0 0;font-size:14px;">Your request is awaiting admin confirmation</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#f5f5f5;font-size:15px;margin-bottom:24px;">Dear <strong style="color:#FFD600;">${form.customerName}</strong>,</p>
+      <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin-bottom:28px;">
+        We've successfully received your booking request! Our admin team will review it and confirm your cab. You'll receive an email once your booking is accepted or if there are any issues.
+      </p>
+      <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+        <div style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">BOOKING REFERENCE</div>
+        <div style="color:#FFD600;font-size:32px;font-weight:900;letter-spacing:3px;">${bookingRef}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <h3 style="color:#FFD600;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">📋 Trip Details</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;width:120px;">📍 Pickup</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.pickup}</td></tr>
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🏁 Drop</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.drop}</td></tr>
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">📅 Date</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.date}</td></tr>
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🕐 Time</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.time}</td></tr>
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">🚗 Vehicle</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.vehicleType}</td></tr>
+          <tr><td style="color:rgba(255,255,255,0.4);font-size:12px;padding:7px 0;">👥 Passengers</td><td style="color:#f5f5f5;font-size:13px;font-weight:600;">${form.passengers}</td></tr>
+        </table>
+      </div>
+      <div style="background:rgba(255,214,0,0.06);border:1px solid rgba(255,214,0,0.15);border-radius:10px;padding:14px;text-align:center;margin-bottom:24px;">
+        <span style="color:#FFD600;font-weight:700;font-size:13px;">⏳ Status: Pending Admin Approval</span>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;text-align:center;">
+        <p style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:8px;">Need help? Contact us:</p>
+        <p style="color:#FFD600;font-size:14px;font-weight:700;margin:4px 0;">📞 +91 97905 82382</p>
+        <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:4px 0;">📧 kumarsandhiya561@gmail.com</p>
+      </div>
+    </div>
+    <div style="background:#111;padding:18px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0;">© ${new Date().getFullYear()} SANA CAB · All rights reserved</p>
+    </div>
+  </div>
+</body>
+</html>`
+      );
+    } catch (err) {
+      console.error("Email failed:", err.message);
     }
 
-    setSuccess(bookingRef);
+    setSuccess({ bookingRef, email: form.email, customerName: form.customerName });
     setLoading(false);
   };
 
   if (success) return (
     <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div className="glass fadeUp" style={{ maxWidth: 460, width: "100%", padding: 48, textAlign: "center" }}>
+      <div className="glass fadeUp" style={{ maxWidth: 500, width: "100%", padding: 48, textAlign: "center" }}>
         <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
         <h2 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: 1, marginBottom: 8 }}>Booking Received!</h2>
-        <p style={{ color: "rgba(255,255,255,.5)", marginBottom: 28, lineHeight: 1.7 }}>We'll call you shortly to confirm your cab. Thank you for choosing SANA CAB!</p>
-        <div style={{ background: "rgba(255,214,0,.07)", border: "1px solid rgba(255,214,0,.2)", borderRadius: 12, padding: 20, marginBottom: 28 }}>
-          <div className="form-label" style={{ textAlign: "center", marginBottom: 6 }}>Booking Reference</div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: "#FFD600", letterSpacing: 2 }}>{success}</div>
+        <p style={{ color: "rgba(255,255,255,.5)", marginBottom: 24, lineHeight: 1.7 }}>
+          We'll call you shortly to confirm your cab. Thank you for choosing <strong style={{ color: "#FFD600" }}>SANA CAB!</strong>
+        </p>
+
+        {/* Pending Status Badge */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          background: "rgba(255,214,0,.1)", border: "1px solid rgba(255,214,0,.3)",
+          borderRadius: 30, padding: "8px 20px", marginBottom: 28
+        }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFD600", display: "inline-block", animation: "pulse 1.5s infinite" }} />
+          <span style={{ color: "#FFD600", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>⏳ Awaiting Admin Approval</span>
         </div>
+
+        {/* Booking Ref */}
+        <div style={{ background: "rgba(255,214,0,.07)", border: "1px solid rgba(255,214,0,.2)", borderRadius: 12, padding: 20, marginBottom: 20 }}>
+          <div className="form-label" style={{ textAlign: "center", marginBottom: 6 }}>Booking Reference</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: "#FFD600", letterSpacing: 2 }}>{success.bookingRef}</div>
+        </div>
+
+        {/* Email notification info */}
+        <div style={{
+          background: "rgba(52,211,153,.06)", border: "1px solid rgba(52,211,153,.2)",
+          borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 13,
+          color: "rgba(255,255,255,.6)", lineHeight: 1.6
+        }}>
+          ✉️ A confirmation email has been sent to <strong style={{ color: "#34d399" }}>{success.email}</strong>.<br />
+          You will receive another email once admin <strong>accepts or rejects</strong> your booking.
+        </div>
+
+        {/* Contact */}
         <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 10, padding: 14, marginBottom: 24, fontSize: 13, color: "rgba(255,255,255,.5)", textAlign: "left" }}>
           📞 <strong style={{ color: "#fff" }}>Call us:</strong> +91 97905 82382<br />
           📧 <strong style={{ color: "#fff" }}>Email:</strong> kumarsandhiya561@gmail.com
         </div>
+
         <button className="btn btn-yellow" style={{ width: "100%" }} onClick={() => {
           setSuccess(null);
           setForm({ customerName: "", mobile: "", email: "", pickup: "", drop: "", date: "", time: "", vehicleType: "Sedan", passengers: 1, notes: "" });
@@ -112,7 +207,7 @@ export default function BookingPage() {
           <F name="customerName" label="Full Name" required placeholder="Your full name" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
           <F name="mobile" label="Mobile Number" required placeholder="10-digit mobile number" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         </div>
-        <F name="email" label="Email Address" placeholder="your@email.com (optional)" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+        <F name="email" label="Email Address" required placeholder="your@email.com (required for booking updates)" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         <h3 style={{ fontWeight: 700, color: "#FFD600", margin: "24px 0 20px", fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>📍 Trip Details</h3>
         <div className="grid-2">
           <F name="pickup" label="Pickup Location" required placeholder="City / address / landmark" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
@@ -134,10 +229,10 @@ export default function BookingPage() {
           <textarea style={{ height: 80, resize: "vertical" }} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Luggage details, special needs, meeting point…" />
         </div>
         <div style={{ background: "rgba(255,214,0,.05)", border: "1px solid rgba(255,214,0,.15)", borderRadius: 10, padding: 14, marginBottom: 22, fontSize: 13, color: "rgba(255,255,255,.5)", lineHeight: 1.6 }}>
-          💡 After booking, our team will call you to confirm the fare and trip details. No hidden charges.
+          💡 After booking, your request goes to our admin for approval. You'll receive a confirmation email once accepted. No hidden charges.
         </div>
         <button className="btn btn-yellow" style={{ width: "100%", fontSize: 16, padding: "14px" }} onClick={submit} disabled={loading}>
-          {loading ? "Confirming…" : "🚕 Confirm Booking"}
+          {loading ? "Submitting…" : "🚕 Submit Booking Request"}
         </button>
       </div>
     </div>
