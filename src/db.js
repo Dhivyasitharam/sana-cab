@@ -1,55 +1,75 @@
-const DB_NAME = "SANA_CAB_DB_V3";
-const DB_VERSION = 1;
-let db = null;
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
-export function openDB() {
-  return new Promise((resolve, reject) => {
-    if (db) return resolve(db);
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      ["registrations","bookings","reviews"].forEach(store => {
-        if (!d.objectStoreNames.contains(store))
-          d.createObjectStore(store, { keyPath:"id", autoIncrement:true });
-      });
-    };
-    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
-    req.onerror = reject;
-  });
+const firebaseConfig = {
+  apiKey: "AIzaSyDtvYkP3K8RC_sNtS_lsEKsARxnA8eCxFg",
+  authDomain: "sana-cab.firebaseapp.com",
+  databaseURL: "https://sana-cab-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sana-cab",
+  storageBucket: "sana-cab.firebasestorage.app",
+  messagingSenderId: "338222568384",
+  appId: "1:338222568384:web:451a584d09dd32c571ee25",
+  measurementId: "G-KG6NQBS6R1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export const openDB = () => Promise.resolve(true);
+
+export async function dbAdd(storeName, data) {
+  try {
+    const colRef = collection(db, storeName);
+    const docRef = await addDoc(colRef, {
+      ...data,
+      createdAt: serverTimestamp(),
+    });
+    return { id: docRef.id, ...data };
+  } catch (err) {
+    console.error("dbAdd error:", err);
+    throw err;
+  }
 }
-export async function dbGetAll(store) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction(store, "readonly");
-    const req = tx.objectStore(store).getAll();
-    req.onsuccess = () => res(req.result);
-    req.onerror = rej;
-  });
+
+export async function dbGetAll(storeName) {
+  try {
+    const colRef = collection(db, storeName);
+    const snapshot = await getDocs(colRef);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.error("dbGetAll error:", err);
+    return [];
+  }
 }
-export async function dbAdd(store, data) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction(store, "readwrite");
-    const req = tx.objectStore(store).add(data);
-    req.onsuccess = () => res(req.result);
-    req.onerror = rej;
-  });
+
+export async function dbUpdate(storeName, data) {
+  try {
+    const { id, ...rest } = data;
+    const docRef = doc(db, storeName, id);
+    await updateDoc(docRef, rest);
+    return data;
+  } catch (err) {
+    console.error("dbUpdate error:", err);
+    throw err;
+  }
 }
-export async function dbUpdate(store, data) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction(store, "readwrite");
-    const req = tx.objectStore(store).put(data);
-    req.onsuccess = () => res(req.result);
-    req.onerror = rej;
-  });
-}
-export async function dbDelete(store, id) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction(store, "readwrite");
-    const req = tx.objectStore(store).delete(id);
-    req.onsuccess = res;
-    req.onerror = rej;
-  });
+
+export async function dbDelete(storeName, id) {
+  try {
+    const docRef = doc(db, storeName, id);
+    await deleteDoc(docRef);
+    return id;
+  } catch (err) {
+    console.error("dbDelete error:", err);
+    throw err;
+  }
 }
