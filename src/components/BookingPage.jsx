@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { dbAdd } from "../db.js";
-import { sendEmailMessage } from "../utils/emailService.js";
 
 const F = ({ name, label, type = "text", placeholder, options, required, form, setForm, errors, setErrors }) => {
   return (
@@ -56,48 +55,17 @@ export default function BookingPage() {
     const e = validate();
     if (Object.keys(e).length) return setErrors(e);
     setLoading(true);
-    const bookingRef = "SCB-" + (Math.floor(Math.random() * 90000) + 10000);
-    await dbAdd("bookings", {
-      ...form, status: "pending", bookingRef,
-      submittedAt: new Date().toISOString(), assignedDriver: ""
-    });
-
-    // Send confirmation email to user that booking is received
     try {
-      await sendEmailMessage(
-        form.email,
-        "Booking Received! – Sana Cab",
-        `Booking Received!\nWe'll call you shortly to confirm your cab. Thank you for choosing SANA CAB!\n\nBooking Reference\n${bookingRef}`,
-        `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Segoe UI',Arial,sans-serif;">
-  <div style="max-width:600px;margin:0 auto;background:#161616;border-radius:16px;overflow:hidden;border:1px solid rgba(255,214,0,0.15);">
-    <div style="background:linear-gradient(135deg,#1a1a00,#2a2200);padding:36px 32px;text-align:center;border-bottom:2px solid #FFD600;">
-      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-      <h1 style="color:#FFD600;font-size:28px;margin:0;letter-spacing:2px;font-weight:900;">BOOKING RECEIVED!</h1>
-    </div>
-    <div style="padding:32px;">
-      <p style="color:rgba(255,255,255,0.8);font-size:16px;line-height:1.7;margin-bottom:28px;text-align:center;">
-        We'll call you shortly to confirm your cab. Thank you for choosing <strong style="color:#FFD600;">SANA CAB!</strong>
-      </p>
-      <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
-        <div style="color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Booking Reference</div>
-        <div style="color:#FFD600;font-size:32px;font-weight:900;letter-spacing:3px;">${bookingRef}</div>
-      </div>
-    </div>
-    <div style="background:#111;padding:18px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
-      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0;">© ${new Date().getFullYear()} SANA CAB · All rights reserved</p>
-    </div>
-  </div>
-</body>
-</html>`
-      );
+      const bookingRef = "SCB-" + (Math.floor(Math.random() * 90000) + 10000);
+      await dbAdd("bookings", {
+        ...form, status: "pending", bookingRef,
+        submittedAt: new Date().toISOString(), assignedDriver: ""
+      });
+      setSuccess({ bookingRef, email: form.email, customerName: form.customerName });
     } catch (err) {
-      console.error("Email failed:", err.message);
+      console.error("Booking failed:", err);
+      alert("Something went wrong. Please try again.");
     }
-
-    setSuccess({ bookingRef, email: form.email, customerName: form.customerName });
     setLoading(false);
   };
 
@@ -110,33 +78,29 @@ export default function BookingPage() {
           We'll call you shortly to confirm your cab. Thank you for choosing <strong style={{ color: "#FFD600" }}>SANA CAB!</strong>
         </p>
 
-        {/* Pending Status Badge */}
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 8,
           background: "rgba(255,214,0,.1)", border: "1px solid rgba(255,214,0,.3)",
           borderRadius: 30, padding: "8px 20px", marginBottom: 28
         }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFD600", display: "inline-block", animation: "pulse 1.5s infinite" }} />
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFD600", display: "inline-block" }} />
           <span style={{ color: "#FFD600", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>⏳ Awaiting Admin Approval</span>
         </div>
 
-        {/* Booking Ref */}
         <div style={{ background: "rgba(255,214,0,.07)", border: "1px solid rgba(255,214,0,.2)", borderRadius: 12, padding: 20, marginBottom: 20 }}>
           <div className="form-label" style={{ textAlign: "center", marginBottom: 6 }}>Booking Reference</div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: "#FFD600", letterSpacing: 2 }}>{success.bookingRef}</div>
         </div>
 
-        {/* Email notification info */}
         <div style={{
           background: "rgba(52,211,153,.06)", border: "1px solid rgba(52,211,153,.2)",
           borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 13,
           color: "rgba(255,255,255,.6)", lineHeight: 1.6
         }}>
-          ✉️ A confirmation email has been sent to <strong style={{ color: "#34d399" }}>{success.email}</strong>.<br />
-          You will receive another email once admin <strong>accepts or rejects</strong> your booking.
+          ✉️ Booking confirmed for <strong style={{ color: "#34d399" }}>{success.email}</strong>.<br />
+          Admin will contact you shortly to confirm your ride.
         </div>
 
-        {/* Contact */}
         <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 10, padding: 14, marginBottom: 24, fontSize: 13, color: "rgba(255,255,255,.5)", textAlign: "left" }}>
           📞 <strong style={{ color: "#fff" }}>Call us:</strong> +91 97905 82382<br />
           📧 <strong style={{ color: "#fff" }}>Email:</strong> kumarsandhiya561@gmail.com
@@ -163,7 +127,7 @@ export default function BookingPage() {
           <F name="customerName" label="Full Name" required placeholder="Your full name" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
           <F name="mobile" label="Mobile Number" required placeholder="10-digit mobile number" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         </div>
-        <F name="email" label="Email Address" required placeholder="your@email.com (required for booking updates)" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+        <F name="email" label="Email Address" required placeholder="your@email.com" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         <h3 style={{ fontWeight: 700, color: "#FFD600", margin: "24px 0 20px", fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>📍 Trip Details</h3>
         <div className="grid-2">
           <F name="pickup" label="Pickup Location" required placeholder="City / address / landmark" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
@@ -185,7 +149,7 @@ export default function BookingPage() {
           <textarea style={{ height: 80, resize: "vertical" }} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Luggage details, special needs, meeting point…" />
         </div>
         <div style={{ background: "rgba(255,214,0,.05)", border: "1px solid rgba(255,214,0,.15)", borderRadius: 10, padding: 14, marginBottom: 22, fontSize: 13, color: "rgba(255,255,255,.5)", lineHeight: 1.6 }}>
-          💡 After booking, your request goes to our admin for approval. You'll receive a confirmation email once accepted. No hidden charges.
+          💡 After booking, your request goes to our admin for approval. You'll receive a call once accepted. No hidden charges.
         </div>
         <button className="btn btn-yellow" style={{ width: "100%", fontSize: 16, padding: "14px" }} onClick={submit} disabled={loading}>
           {loading ? "Submitting…" : "🚕 Submit Booking Request"}
